@@ -3,7 +3,7 @@
 .firebase/
 .firebaserc
 firebase.json
-src/firebase.js
+
 # Logs
 logs
 *.log
