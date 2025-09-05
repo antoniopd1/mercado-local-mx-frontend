@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase'; // Corregida la ruta de importación
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'
 
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const navigate = useNavigate()
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -20,6 +21,9 @@ function LoginForm() {
       // Quita la siguiente línea de navegación.
       // navigate('/dashboard'); 
 
+      navigate('/')
+
+
       // Validamos el correo inmediatamente después del inicio de sesión
       if (!userCredential.user.emailVerified) {
         await auth.signOut();
@@ -27,6 +31,7 @@ function LoginForm() {
         // Aquí no necesitamos redirigir, porque el signOut hará que AuthWrapper nos redirija
         return; 
       }
+      
       
       // Si el email está verificado, muestra un mensaje de éxito.
       // El onAuthStateChanged en tu store se encargará del resto.
