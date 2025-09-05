@@ -3,38 +3,37 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase'; // Corregida la ruta de importación
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore'; // Importa tu store
+
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const clearAuth = useAuthStore((state) => state.clearAuth); // Obtén la acción para limpiar el estado
+
 
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // La navegación ahora será manejada por el AuthWrapper/ProtectedRoute.
+      // Quita la siguiente línea de navegación.
+      // navigate('/dashboard'); 
 
+      // Validamos el correo inmediatamente después del inicio de sesión
       if (!userCredential.user.emailVerified) {
-        toast.error('Por favor, verifica tu correo electrónico para continuar.');
         await auth.signOut();
-        clearAuth();
-        navigate('/login');
-        // El 'return' detiene la ejecución aquí
+        toast.error('Por favor, verifica tu correo electrónico para continuar.');
+        // Aquí no necesitamos redirigir, porque el signOut hará que AuthWrapper nos redirija
         return; 
       }
       
-
-      // Si el email está verificado, continúa
+      // Si el email está verificado, muestra un mensaje de éxito.
+      // El onAuthStateChanged en tu store se encargará del resto.
       toast.success('¡Inicio de sesión exitoso!');
       setEmail('');
-      setPassword('');
-      navigate('/dashboard')
-
-
+      setPassword('')
+      
     } catch (error) {
       let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.';
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
