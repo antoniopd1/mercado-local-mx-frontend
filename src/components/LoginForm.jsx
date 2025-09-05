@@ -19,13 +19,14 @@ function LoginForm() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
       if (!userCredential.user.emailVerified) {
-        // El usuario se logueó, pero el email no está verificado.
-        await auth.signOut(); // Cierra la sesión inmediatamente
-        navigate('/login');
         toast.error('Por favor, verifica tu correo electrónico para continuar.');
-        clearAuth(); // Limpia el estado del store
-        return; // Sal de la función para detener la redirección
+        await auth.signOut();
+        clearAuth();
+        navigate('/login');
+        // El 'return' detiene la ejecución aquí
+        return; 
       }
+      
 
       // Si el email está verificado, continúa
       toast.success('¡Inicio de sesión exitoso!');
