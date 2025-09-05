@@ -4,23 +4,35 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase'; // Corregida la ruta de importación
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore'; // Importa tu store
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const clearAuth = useAuthStore((state) => state.clearAuth); // Obtén la acción para limpiar el estado
 
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      if (!userCredential.user.emailVerified) {
+        // El usuario se logueó, pero el email no está verificado.
+        toast.error('Por favor, verifica tu correo electrónico para continuar.');
+        await auth.signOut(); // Cierra la sesión inmediatamente
+        clearAuth(); // Limpia el estado del store
+        return; // Sal de la función para detener la redirección
+      }
+
+      // Si el email está verificado, continúa
       toast.success('¡Inicio de sesión exitoso!');
       setEmail('');
       setPassword('');
-      // Después de iniciar sesión, navegamos al dashboard.
-      // El AuthWrapper en App.jsx lo haría de todos modos,
-      // pero esta navegación directa proporciona una respuesta más rápida.
-      navigate('/dashboard');
+      navigate('/dashboard')
+
+
     } catch (error) {
       let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.';
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
