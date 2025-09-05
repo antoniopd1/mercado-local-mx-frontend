@@ -1,6 +1,6 @@
 // frontend/src/components/LoginForm.jsx
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../firebase'; // Corregida la ruta de importación
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom'
@@ -17,18 +17,13 @@ function LoginForm() {
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // La navegación ahora será manejada por el AuthWrapper/ProtectedRoute.
-      // Quita la siguiente línea de navegación.
-      // navigate('/dashboard'); 
-
-      navigate('/verify-email')
-
 
       // Validamos el correo inmediatamente después del inicio de sesión
       if (!userCredential.user.emailVerified) {
-        await auth.signOut();
+        await signOut(auth)
         toast.error('Por favor, verifica tu correo electrónico para continuar.');
         // Aquí no necesitamos redirigir, porque el signOut hará que AuthWrapper nos redirija
+        navigate('/verify-email')
         return; 
       }
       
