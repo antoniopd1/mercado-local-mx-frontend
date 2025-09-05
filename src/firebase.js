@@ -4,7 +4,9 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 
-const firebaseConfig = import.meta.env.VITE_FIREBASE_CONFIG
+const firebaseConfigString = import.meta.env.VITE_FIREBASE_CONFIG
+
+const firebaseConfig = JSON.parse(firebaseConfigString);
 
 
 // Inicializa Firebase
