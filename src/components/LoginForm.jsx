@@ -23,6 +23,7 @@ function LoginForm() {
         toast.error('Por favor, verifica tu correo electrónico para continuar.');
         await auth.signOut(); // Cierra la sesión inmediatamente
         clearAuth(); // Limpia el estado del store
+        navigate('/login');
         return; // Sal de la función para detener la redirección
       }
 
