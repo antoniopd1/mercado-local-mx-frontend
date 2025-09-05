@@ -64,7 +64,7 @@ function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-100 bg-cover bg-center bg-fixed"
+        <div className="min-h-screen flex flex-col bg-gray-100 bg-cover bg-center"
             style={{ backgroundImage: 'url("/Uriangato-Guanajuato-principal-1200x500.jpg")' }}
         >
             {/* Navbar */}
