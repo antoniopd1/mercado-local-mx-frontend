@@ -21,7 +21,7 @@ function LoginForm() {
       // Quita la siguiente línea de navegación.
       // navigate('/dashboard'); 
 
-      navigate('/')
+      navigate('/verify-email')
 
 
       // Validamos el correo inmediatamente después del inicio de sesión
