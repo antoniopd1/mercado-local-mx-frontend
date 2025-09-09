@@ -9,13 +9,13 @@ import BusinessDisplay from './BusinessDisplay';
 
 // Importa las funciones del servicio de API
 import { getMyBusiness, createBusiness, updateBusiness } from '../services/apiService';
-import { MUNICIPALITY_OPTIONS, LOCATION_TYPE_OPTIONS } from '../data/dataBussines'; // Necesario para resetear formData
+import { MUNICIPALITY_OPTIONS, LOCATION_TYPE_OPTIONS } from '../data/dataBussines';
 
 // Importa el icono de spinner
 import { FaSpinner } from 'react-icons/fa'; 
 
 function ProfilePage() {
-    const { user, isAuthenticated, isLoading: authLoading } = useAuthStore(); // Renombrado isLoading a authLoading para evitar conflicto
+    const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
 
     const initialFormData = {
         name: '', what_they_sell: '', hours: '', municipality: MUNICIPALITY_OPTIONS[0].value,
@@ -31,7 +31,7 @@ function ProfilePage() {
     const [businessExists, setBusinessExists] = useState(false);
     const [existingBusiness, setExistingBusiness] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [pageLoading, setPageLoading] = useState(true); // <-- NUEVO ESTADO DE CARGA PARA LA PÁGINA
+    const [pageLoading, setPageLoading] = useState(true);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -62,7 +62,7 @@ function ProfilePage() {
 
     useEffect(() => {
         const fetchUserBusiness = async () => {
-            setPageLoading(true); // <-- Inicia la carga al inicio de la petición
+            setPageLoading(true);
             if (authLoading || !isAuthenticated || !user) {
                 setBusinessExists(false);
                 setExistingBusiness(null);
@@ -70,7 +70,7 @@ function ProfilePage() {
                 setLogoFile(null);
                 setLogoPreviewUrl('');
                 setIsEditMode(false);
-                setPageLoading(false); // Asegúrate de detener la carga aquí también si las condiciones no se cumplen
+                setPageLoading(false);
                 return;
             }
 
@@ -104,7 +104,7 @@ function ProfilePage() {
             } catch (error) {
                 console.error("Error al cargar el perfil de negocio:", error);
                 if (error.response && error.response.status === 404) {
-                    setBusinessExists(false); // Negocio no encontrado, es un flujo normal si no tiene uno
+                    setBusinessExists(false);
                     setExistingBusiness(null);
                 } else if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                     toast.error("Tu sesión ha expirado o no estás autorizado. Por favor, inicia sesión de nuevo.");
@@ -116,16 +116,16 @@ function ProfilePage() {
                     setExistingBusiness(null);
                 }
             } finally {
-                setPageLoading(false); // <-- Detiene la carga al finalizar la petición (éxito o error)
+                setPageLoading(false);
             }
         };
 
         if (!authLoading && isAuthenticated && user) {
             fetchUserBusiness();
         } else if (!authLoading && !isAuthenticated) {
-            setPageLoading(false); // Detiene la carga si no está autenticado
+            setPageLoading(false);
         }
-    }, [isAuthenticated, user, authLoading]); // Asegúrate de que authLoading esté en las dependencias
+    }, [isAuthenticated, user, authLoading]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -137,30 +137,35 @@ function ProfilePage() {
             return;
         }
 
+        // --- Inicio de la lógica corregida ---
         const dataToSend = new FormData();
+        
+        // 1. Adjunta cada campo de texto del estado 'formData'
         for (const key in formData) {
+            // Se agregan todos los campos del formulario al objeto FormData
             dataToSend.append(key, formData[key]);
         }
 
+        // 2. Adjunta el archivo del logo si existe en el estado 'logoFile'
         if (logoFile) {
             dataToSend.append('logo', logoFile);
-        } else if (isEditMode && existingBusiness && !existingBusiness.logo && logoPreviewUrl === '') {
-             // Si estamos editando y el logo fue eliminado (logoFile es null y logoPreviewUrl vacía)
-             // Y no había logo antes, envía una cadena vacía para eliminarlo en el backend si el campo lo permite
-             // Si el campo de logo en Django tiene null=True, simplemente no enviarlo puede funcionar.
-             // Si se requiere borrar explícitamente, 'delete_logo': true o similar podría ser mejor.
-             // Por ahora, si no se selecciona nada y no había nada, simplemente no se añade el campo 'logo'.
-             // Si se quiere eliminar un logo existente, el backend necesita una señal explícita (e.g., checkbox 'eliminar logo' o enviar 'null')
-            // dataToSend.append('logo', ''); // Descomentar si tu backend espera esto para eliminar el logo
+        } 
+        
+        // 3. Maneja el caso de eliminación del logo si el usuario lo quitó del formulario
+        // Esta lógica envía una cadena vacía al backend para indicar la eliminación del logo existente.
+        else if (isEditMode && existingBusiness?.logo && !logoFile && !logoPreviewUrl) {
+            dataToSend.append('logo', '');
         }
 
         try {
             let response;
             if (isEditMode && existingBusiness) {
-                response = await updateBusiness(existingBusiness.id, dataToSend);
+                // Se pasa el objeto FormData a la función de la API
+                response = await updateBusiness(existingBusiness.id, dataToSend); 
                 toast.success("¡Negocio actualizado exitosamente!");
             } else {
-                response = await createBusiness(dataToSend);
+                // Se pasa el objeto FormData a la función de la API
+                response = await createBusiness(dataToSend); 
                 toast.success("¡Negocio registrado exitosamente!");
             }
 
@@ -188,6 +193,7 @@ function ProfilePage() {
             setIsSubmitting(false);
         }
     };
+    // --- Fin de la lógica corregida ---
 
     const handleEditClick = () => {
         if (existingBusiness) {
@@ -239,8 +245,7 @@ function ProfilePage() {
         setLogoPreviewUrl('');
     };
 
-    // Renderiza el spinner de carga inicial de la página
-    if (pageLoading || authLoading) { // Muestra spinner si la autenticación o la página están cargando
+    if (pageLoading || authLoading) {
         return (
             <div className="flex justify-center items-center h-full min-h-[500px] flex-col bg-gray-100">
                 <FaSpinner className="animate-spin text-indigo-600 text-5xl mb-4" />
@@ -250,11 +255,11 @@ function ProfilePage() {
     }
 
     return (
-        <div className="p-4 sm:p-6 w-full max-w-4xl mx-auto  rounded-lg shadow-md my-8">
+        <div className="p-4 sm:p-6 w-full max-w-4xl mx-auto rounded-lg shadow-md my-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-white">Mi Perfil de Negocio</h1>
 
             {!isAuthenticated ? (
-                <div className="text-center p-4  border-l-4 border-yellow-500 text-yellow-700">
+                <div className="text-center p-4 border-l-4 border-yellow-500 text-yellow-700">
                     <p className="font-bold">¡Atención!</p>
                     <p>Para registrar o ver tu negocio, por favor, inicia sesión.</p>
                 </div>
